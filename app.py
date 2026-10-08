@@ -183,17 +183,21 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Helper to render raw HTML safely
+def _html(content: str):
+    st.html(content)
+
 ws_mgr = get_ws_manager()
 
 with st.sidebar:
     st.markdown("### 🔌 Conexão WebSocket (ESP32)")
     
     if ws_mgr.status_state == "online":
-        st.markdown(f'<div class="status-badge-online">● CONECTADO</div>', unsafe_allow_html=True)
+        st.html('<div class="status-badge-online">● CONECTADO</div>')
     elif ws_mgr.status_state == "warning":
-        st.markdown(f'<div class="status-badge-warning">▲ AGUARDANDO / CONECTANDO</div>', unsafe_allow_html=True)
+        st.html('<div class="status-badge-warning">▲ AGUARDANDO / CONECTANDO</div>')
     else:
-        st.markdown(f'<div class="status-badge-offline">○ DESCONECTADO</div>', unsafe_allow_html=True)
+        st.html('<div class="status-badge-offline">○ DESCONECTADO</div>')
         
     st.caption(f"**Status:** {ws_mgr.status_message}")
     st.divider()
@@ -276,8 +280,8 @@ with st.sidebar:
 def render_live_dashboard():
     header_col1, header_col2 = st.columns([3, 1])
     with header_col1:
-        st.markdown('<div class="main-title">Trilho de Ar • Relatório de Evolução (VeloTrilho)</div>', unsafe_allow_html=True)
-        st.markdown('<div class="sub-title">Medição cinemática de alta precisão via interrupções de hardware ESP32 e transmissão WebSocket.</div>', unsafe_allow_html=True)
+        st.html('<div class="main-title">Trilho de Ar • Relatório de Evolução (VeloTrilho)</div>')
+        st.html('<div class="sub-title">Medição cinemática de alta precisão via interrupções de hardware ESP32 e transmissão WebSocket.</div>')
     with header_col2:
         total_runs = len(ws_mgr.history)
         st.metric("Total de Ensaios", f"{total_runs}", delta=f"Último: #{ws_mgr.latest_result.run_id}" if ws_mgr.latest_result else "Aguardando")
@@ -332,7 +336,7 @@ def render_live_dashboard():
         </div>
     </div>
     """
-    st.markdown(rail_html, unsafe_allow_html=True)
+    st.html(rail_html)
 
     if latest is None:
         st.info(
@@ -346,7 +350,7 @@ def render_live_dashboard():
         c1, c2, c3, c4 = st.columns(4)
 
         with c1:
-            st.markdown(f"""
+            st.html(f"""
             <div class="metric-card">
                 <div class="metric-card-header">Trecho 1 (S₁ → S₂)</div>
                 <div class="metric-val-main">{latest.v12:.3f}<span class="metric-val-unit">m/s</span></div>
@@ -356,10 +360,10 @@ def render_live_dashboard():
                 </div>
                 <div class="metric-badge-green">Velocidade Média 1</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
 
         with c2:
-            st.markdown(f"""
+            st.html(f"""
             <div class="metric-card">
                 <div class="metric-card-header">Trecho 2 (S₂ → S₃)</div>
                 <div class="metric-val-main">{latest.v23:.3f}<span class="metric-val-unit">m/s</span></div>
@@ -369,10 +373,10 @@ def render_live_dashboard():
                 </div>
                 <div class="metric-badge-green">Velocidade Média 2</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
 
         with c3:
-            st.markdown(f"""
+            st.html(f"""
             <div class="metric-card">
                 <div class="metric-card-header">Percurso Total (S₁ → S₃)</div>
                 <div class="metric-val-main">{latest.v_med:.3f}<span class="metric-val-unit">m/s</span></div>
@@ -382,10 +386,10 @@ def render_live_dashboard():
                 </div>
                 <div class="metric-badge-amber">Velocidade Média Global</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
 
         with c4:
-            st.markdown(f"""
+            st.html(f"""
             <div class="metric-card">
                 <div class="metric-card-header">Aceleração Experimental</div>
                 <div class="metric-val-main">{latest.acceleration:.3f}<span class="metric-val-unit">m/s²</span></div>
@@ -395,32 +399,32 @@ def render_live_dashboard():
                 </div>
                 <div class="metric-badge-amber">{latest.motion_type}</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
 
         st.markdown("### 🧮 Memorial de Cálculo Didático (Passo a Passo)")
         col_m1, col_m2 = st.columns(2)
         with col_m1:
-            st.markdown(f"""
-            <div class="didactic-box">
-                <b>1. Velocidade no Trecho 1 ($S_1 \\to S_2$):</b><br>
-                $$v_{{12}} = \\frac{{S_2 - S_1}}{{T_2 - T_1}} = \\frac{{{cfg.d2:.3f} - {cfg.d1:.3f}}}{{{latest.dt12:.4f}}} = \\mathbf{{{latest.v12:.3f}\\text{{ m/s}}}}$$
-                <br>
-                <b>2. Velocidade no Trecho 2 ($S_2 \\to S_3$):</b><br>
-                $$v_{{23}} = \\frac{{S_3 - S_2}}{{T_3 - T_2}} = \\frac{{{cfg.d3:.3f} - {cfg.d2:.3f}}}{{{latest.dt23:.4f}}} = \\mathbf{{{latest.v23:.3f}\\text{{ m/s}}}}$$
-            </div>
-            """, unsafe_allow_html=True)
+            st.html('<div class="didactic-box" style="padding:14px 18px;">')
+            st.markdown(
+                f"**1. Velocidade no Trecho 1** ($S_1 \\to S_2$):  \n"
+                f"$$v_{{12}} = \\frac{{{cfg.d2:.3f} - {cfg.d1:.3f}}}{{{latest.dt12:.4f}}} "
+                f"= \\mathbf{{{latest.v12:.3f}\\;\\text{{m/s}}}}$$\n\n"
+                f"**2. Velocidade no Trecho 2** ($S_2 \\to S_3$):  \n"
+                f"$$v_{{23}} = \\frac{{{cfg.d3:.3f} - {cfg.d2:.3f}}}{{{latest.dt23:.4f}}} "
+                f"= \\mathbf{{{latest.v23:.3f}\\;\\text{{m/s}}}}$$"
+            )
 
         with col_m2:
             dt_mid = (latest.dt12 + latest.dt23) / 2.0
-            st.markdown(f"""
-            <div class="didactic-box">
-                <b>3. Velocidade Média Global ($S_1 \\to S_3$):</b><br>
-                $$v_{{\\text{{méd}}}} = \\frac{{S_3 - S_1}}{{T_3 - T_1}} = \\frac{{{cfg.d3:.3f} - {cfg.d1:.3f}}}{{{latest.dt_total:.4f}}} = \\mathbf{{{latest.v_med:.3f}\\text{{ m/s}}}}$$
-                <br>
-                <b>4. Aceleração Média Estimada ($a_m$):</b><br>
-                $$a_m = \\frac{{v_{{23}} - v_{{12}}}}{{\\Delta t_m}} = \\frac{{{latest.v23:.3f} - {latest.v12:.3f}}}{{{dt_mid:.4f}}} = \\mathbf{{{latest.acceleration:.3f}\\text{{ m/s}}^2}}$$
-            </div>
-            """, unsafe_allow_html=True)
+            st.html('<div class="didactic-box" style="padding:14px 18px;">')
+            st.markdown(
+                f"**3. Velocidade Média Global** ($S_1 \\to S_3$):  \n"
+                f"$$v_{{\\text{{méd}}}} = \\frac{{{cfg.d3:.3f} - {cfg.d1:.3f}}}{{{latest.dt_total:.4f}}} "
+                f"= \\mathbf{{{latest.v_med:.3f}\\;\\text{{m/s}}}}$$\n\n"
+                f"**4. Aceleração Média Estimada** ($a_m$):  \n"
+                f"$$a_m = \\frac{{{latest.v23:.3f} - {latest.v12:.3f}}}{{{dt_mid:.4f}}} "
+                f"= \\mathbf{{{latest.acceleration:.3f}\\;\\text{{m/s}}^2}}$$"
+            )
 
         st.markdown("### 📈 Análise Gráfica Experimental")
         g1, g2 = st.columns(2)
